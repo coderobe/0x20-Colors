@@ -101,11 +101,8 @@ int main(void){
 
     /* GUI */
     {
-
-    }
-    {
       struct nk_panel layout;
-      if(nk_begin(ctx, &layout, "Basic Demo", nk_rect(320, 50, 275, 610),
+      if(nk_begin(ctx, &layout, "0xNative image test", nk_rect(320, 50, 275, 610),
                   NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE|NK_WINDOW_SCALABLE)
       ){
           static const float ratio[] = {1.0f, 1.0f, 1.0f};
