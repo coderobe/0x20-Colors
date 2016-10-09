@@ -23,7 +23,7 @@ set(SOURCE_FILES
     nuklear_glfw_gl2.h
     stb_image.h
 
-        "${CMAKE_CURRENT_BINARY_DIR}/Megumi.png")
+        "${CMAKE_CURRENT_BINARY_DIR}/Megumi.png" util.h)
 
 add_executable(0xNative ${SOURCE_FILES})
 
