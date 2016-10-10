@@ -11,6 +11,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include "util.h"
+#include <thread>
 
 using namespace std;
 
@@ -32,7 +33,7 @@ class EffectManager{
             string title = "";
             string filename = "";
         };
-        struct nk_color *background;
+        nk_color* background;
         BOOL playing = false;
         bool in_buildup = false;
         vector<string> command_queue;
@@ -42,9 +43,13 @@ class EffectManager{
         HSTREAM audio_buffer = 0;
         BASS_CHANNELINFO audio_info;
         BOOL bass_initialized = false;
+        thread timer_thread;
+        static void CALLBACK start_timer_proc(HSYNC handle, DWORD channel, DWORD data, void* user){
+            *(nk_color *)user = nk_rgb(0, 100, 0);
+        }
         bool play_song(audio* track){
             if(!bass_initialized){
-                bass_initialized = BASS_Init(-1, audio_info.freq, audio_info.flags, 0, NULL);
+                bass_initialized = BASS_Init(-1, 44100, 0, NULL, NULL);
                 if(!bass_initialized){
                     basserror("init");
                 }
@@ -63,7 +68,7 @@ class EffectManager{
             BASS_CHANNELINFO sample_info;
             BASS_ChannelGetInfo(audio_samples[track->sample_id], &sample_info);
             void* sample = malloc(sample_len);
-            BASS_ChannelGetData(audio_samples[track->sample_id], sample, sample_len);
+            BASS_ChannelGetData(audio_samples[track->sample_id], sample, (DWORD)sample_len);
             basserror("stream read");
             if(audio_buffer != 0) BASS_StreamFree(audio_buffer);
             basserror("stream free");
@@ -75,11 +80,10 @@ class EffectManager{
             basserror("stream copy");
 
             BASS_ChannelGetInfo(audio_buffer, &audio_info);
-            basserror("getting info");
-
-            //BASS_ChannelSetSync(audio_buffer, BASS_SYNC_END|BASS_SYNC_MIXTIME, 0, LoopSyncProc, 0);
+            BASS_ChannelSetSync(audio_buffer, BASS_SYNC_POS, 0, start_timer_proc, (void *)background);
+            BASS_ChannelSetAttribute(audio_buffer, BASS_ATTRIB_VOL, 0.1f);
             playing = BASS_ChannelPlay(audio_buffer, false);
-            basserror("playing");
+            basserror("play_song");
 
             return true;
         }
@@ -91,7 +95,7 @@ class EffectManager{
                     BASS_STREAM_PRESCAN|BASS_ASYNCFILE
             );*/
 
-            HSTREAM astream =       BASS_StreamCreateFile(FALSE, filename.c_str(), 0, 0, BASS_STREAM_DECODE);
+            HSTREAM astream       = BASS_StreamCreateFile(FALSE, filename.c_str(), 0, 0, BASS_STREAM_DECODE);
             if (!astream) astream = BASS_MusicLoad(FALSE, filename.c_str(), 0, 0, BASS_MUSIC_DECODE, 1);
 
             basserror("decoder");
@@ -106,7 +110,7 @@ class EffectManager{
             // todo: implement
             return false;
         }
-        void timer_thread() {
+        void timer() {
             while (playing) {
                 if(beat_string.size() > 0){
                     do_beat(beat_string.at(0));
