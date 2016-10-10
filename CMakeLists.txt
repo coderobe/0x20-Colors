@@ -3,7 +3,7 @@ project(0xNative)
 
 if (NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     # list of files for which we add a copy rule
-    set(data_SHADOW Megumi.png, loop_Finale.mp3)
+    set(data_SHADOW launch.sh libbass.so Megumi.png loop_Finale.mp3)
 
     foreach(item IN LISTS data_SHADOW)
         message(STATUS ${item})
@@ -25,6 +25,8 @@ set(SOURCE_FILES
     util.h
     effect_manager.h
 
+    "${CMAKE_CURRENT_BINARY_DIR}/launch.sh"
+    "${CMAKE_CURRENT_BINARY_DIR}/libbass.so"
     "${CMAKE_CURRENT_BINARY_DIR}/Megumi.png"
     "${CMAKE_CURRENT_BINARY_DIR}/loop_Finale.mp3"
 )
