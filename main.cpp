@@ -35,6 +35,7 @@
 
 #include "stb_image.h"
 #include "util.h"
+#include "effect_manager.h"
 
 int main(void) {
     /* Platform */
@@ -61,9 +62,11 @@ int main(void) {
         nk_glfw3_font_stash_end();
     }
 
-    background = nk_rgb(0, 0, 0);
+    int r = 0;
+    int g = 0;
+    int b = 0;
 
-    struct nk_image background_image = icon_load("./Megumi.png");
+    //struct nk_image background_image = icon_load("./Megumi.png");
 
     while (!glfwWindowShouldClose(win)) {
         /* Input */
@@ -71,21 +74,11 @@ int main(void) {
         nk_glfw3_new_frame();
 
         /* GUI */
-        /*
-        {
-            struct nk_panel layout;
-            if (nk_begin(ctx, &layout, "0xNative image test", nk_rect(320, 50, 275, 610),
-                         NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_TITLE | NK_WINDOW_SCALABLE)
-                    ) {
-                static const float ratio[] = {1.0f, 1.0f, 1.0f};
-                nk_layout_row(ctx, NK_DYNAMIC, height, 3, ratio);
-                nk_spacing(ctx, 1);
-                nk_image(ctx, background_image);
-                //printf("test");
-            }
-            nk_end(ctx);
-        }
-        */
+        // TODO: add gui
+
+        background = nk_rgb(0, 100, 100);
+
+        EffectManager *em = new EffectManager(&background);
 
         /* Draw */
         {

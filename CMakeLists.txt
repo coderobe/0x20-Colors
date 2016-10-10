@@ -3,7 +3,7 @@ project(0xNative)
 
 if (NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     # list of files for which we add a copy rule
-    set(data_SHADOW Megumi.png)
+    set(data_SHADOW Megumi.png, loop_Finale.mp3)
 
     foreach(item IN LISTS data_SHADOW)
         message(STATUS ${item})
@@ -15,16 +15,21 @@ if (NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     endforeach()
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++14 -Og -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++14 -Og -g -fpermissive")
 
 set(SOURCE_FILES
     main.cpp
     nuklear.h
     nuklear_glfw_gl2.h
     stb_image.h
+    util.h
+    effect_manager.h
 
-        "${CMAKE_CURRENT_BINARY_DIR}/Megumi.png" util.h)
+    "${CMAKE_CURRENT_BINARY_DIR}/Megumi.png"
+    "${CMAKE_CURRENT_BINARY_DIR}/loop_Finale.mp3"
+)
+
 
 add_executable(0xNative ${SOURCE_FILES})
 
-TARGET_LINK_LIBRARIES(0xNative GLEW glfw GL m GLU)
+TARGET_LINK_LIBRARIES(0xNative GLEW glfw GL m GLU bass)
