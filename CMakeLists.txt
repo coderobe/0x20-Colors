@@ -39,4 +39,4 @@ set(SOURCE_FILES
 
 add_executable(0xNative ${SOURCE_FILES})
 
-TARGET_LINK_LIBRARIES(0xNative GLEW glfw GL m GLU bass)
+TARGET_LINK_LIBRARIES(0xNative GLEW glfw GL m GLU ${CMAKE_CURRENT_BINARY_DIR}/libbass.so)
