@@ -9,16 +9,18 @@
 #include <vector>
 #include <bass.h>
 #include <malloc.h>
+#include <stdlib.h>
+#include "util.h"
 
 using namespace std;
 
 class EffectManager{
     public:
-        EffectManager(struct nk_color *background){
+        EffectManager(struct nk_color* background){
             this->background = background;
-            audio track;
-            track.title = "Madeon - Finale (loop)";
-            track.filename = "loop_Finale.mp3";
+            audio *track = new audio();
+            track->title = "Madeon - Finale (loop)";
+            track->filename = "loop_Finale.mp3";
             play_song(track);
         }
         ~EffectManager(){
@@ -26,9 +28,9 @@ class EffectManager{
         }
     private:
         struct audio {
-            unsigned long sample_id;
-            string title;
-            const char* filename;
+            long long sample_id = -1;
+            string title = "";
+            string filename = "";
         };
         struct nk_color *background;
         BOOL playing = false;
@@ -37,48 +39,67 @@ class EffectManager{
         string beat_string;
         string beat_string_source;
         vector<HSTREAM> audio_samples;
-        HSTREAM audio_buffer;
+        HSTREAM audio_buffer = 0;
         BASS_CHANNELINFO audio_info;
         BOOL bass_initialized = false;
-        bool play_song(audio track){
-            if(track.sample_id == NULL){
-                if(track.filename == NULL){
-                    return false;
-                }else{
-                    track.sample_id = read_file(track.filename);
+        bool play_song(audio* track){
+            if(!bass_initialized){
+                bass_initialized = BASS_Init(-1, audio_info.freq, audio_info.flags, 0, NULL);
+                if(!bass_initialized){
+                    basserror("init");
                 }
             }
 
-            free(&audio_buffer);
-            audio_buffer = (HSTREAM)malloc(sizeof(audio_samples[track.sample_id]));
-            memcpy(&audio_buffer, &audio_samples[track.sample_id], sizeof(audio_samples[track.sample_id]));
+            if(track->sample_id == -1){
+                if(track->filename == ""){
+                    return false;
+                }else{
+                    track->sample_id = read_file(track->filename);
+                }
+            }
+            printf("%s\n", track->title.c_str());
+
+            QWORD sample_len = BASS_ChannelGetLength(audio_samples[track->sample_id], BASS_POS_BYTE);
+            BASS_CHANNELINFO sample_info;
+            BASS_ChannelGetInfo(audio_samples[track->sample_id], &sample_info);
+            void* sample = malloc(sample_len);
+            BASS_ChannelGetData(audio_samples[track->sample_id], sample, BASS_DATA_AVAILABLE);
+            basserror("stream read");
+            if(audio_buffer != 0) BASS_StreamFree(audio_buffer);
+            basserror("stream free");
+            audio_buffer = BASS_StreamCreate(
+                sample_info.freq, sample_info.chans, sample_info.flags, STREAMPROC_PUSH, NULL
+            );
+            basserror("stream setup");
+            BASS_StreamPutData(audio_buffer, sample, (DWORD)sample_len);
+            basserror("stream copy");
 
             BASS_ChannelGetInfo(audio_buffer, &audio_info);
-
-            while(!bass_initialized){
-                bass_initialized = BASS_Init(-1, audio_info.freq, audio_info.flags, 0, NULL);
-            }
-
-            BASS_SetVolume(0.5f);
+            basserror("getting info");
 
             playing = BASS_ChannelPlay(audio_buffer, false);
+            basserror("playing");
 
             return true;
         }
-        unsigned long read_file(const char *filename){
-            printf("Decoding %s\n", filename);
+        long long read_file(string filename){
+            printf("Decoding %s\n", filename.c_str());
 
             HSTREAM astream = BASS_StreamCreateFile(
-                    false, filename, 0, 0,
-                    BASS_STREAM_DECODE
+                    false, filename.c_str(), 0, 0,
+                    BASS_STREAM_PRESCAN|BASS_ASYNCFILE
             );
+
+            basserror("decoder");
 
             audio_samples.push_back(astream);
 
-            return audio_samples.size();
+            printf("Track ID: %lu\n", audio_samples.size()-1);
+
+            return (long long)audio_samples.size()-1;
         }
         bool do_beat(char beat_char){
-
+            // todo: implement
             return false;
         }
         void timer_thread() {

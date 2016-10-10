@@ -4,6 +4,15 @@
 
 #ifndef INC_0XNATIVE_UTIL_H
 #define INC_0XNATIVE_UTIL_H
+
+#include <bass.h>
+#include <iostream>
+#include <string>
+#include <stdlib.h>
+#include <libltdl/lt_system.h>
+
+using namespace std;
+
 static void die(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
@@ -34,5 +43,10 @@ static struct nk_image icon_load(const char *filename) {
 
 static void error_callback(int e, const char *d) {
     printf("Error %d: %s\n", e, d);
+}
+
+static void basserror(string label){
+    int be = BASS_ErrorGetCode();
+    if(be != 0) printf("BASS Error at %s: %d\n", label.c_str(), be);
 }
 #endif //INC_0XNATIVE_UTIL_H

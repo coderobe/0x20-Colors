@@ -67,6 +67,9 @@ int main(void) {
     int b = 0;
 
     //struct nk_image background_image = icon_load("./Megumi.png");
+    background = nk_rgb(0, 100, 100);
+
+    EffectManager *em = new EffectManager(&background);
 
     while (!glfwWindowShouldClose(win)) {
         /* Input */
@@ -75,10 +78,6 @@ int main(void) {
 
         /* GUI */
         // TODO: add gui
-
-        background = nk_rgb(0, 100, 100);
-
-        EffectManager *em = new EffectManager(&background);
 
         /* Draw */
         {
