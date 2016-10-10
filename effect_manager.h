@@ -63,12 +63,12 @@ class EffectManager{
             BASS_CHANNELINFO sample_info;
             BASS_ChannelGetInfo(audio_samples[track->sample_id], &sample_info);
             void* sample = malloc(sample_len);
-            BASS_ChannelGetData(audio_samples[track->sample_id], sample, BASS_DATA_AVAILABLE);
+            BASS_ChannelGetData(audio_samples[track->sample_id], sample, sample_len);
             basserror("stream read");
             if(audio_buffer != 0) BASS_StreamFree(audio_buffer);
             basserror("stream free");
             audio_buffer = BASS_StreamCreate(
-                sample_info.freq, sample_info.chans, sample_info.flags, STREAMPROC_PUSH, NULL
+                sample_info.freq, sample_info.chans, BASS_SAMPLE_LOOP, STREAMPROC_PUSH, NULL
             );
             basserror("stream setup");
             BASS_StreamPutData(audio_buffer, sample, (DWORD)sample_len);
@@ -77,6 +77,7 @@ class EffectManager{
             BASS_ChannelGetInfo(audio_buffer, &audio_info);
             basserror("getting info");
 
+            //BASS_ChannelSetSync(audio_buffer, BASS_SYNC_END|BASS_SYNC_MIXTIME, 0, LoopSyncProc, 0);
             playing = BASS_ChannelPlay(audio_buffer, false);
             basserror("playing");
 
@@ -85,10 +86,13 @@ class EffectManager{
         long long read_file(string filename){
             printf("Decoding %s\n", filename.c_str());
 
-            HSTREAM astream = BASS_StreamCreateFile(
+            /*HSTREAM astream = BASS_StreamCreateFile(
                     false, filename.c_str(), 0, 0,
                     BASS_STREAM_PRESCAN|BASS_ASYNCFILE
-            );
+            );*/
+
+            HSTREAM astream =       BASS_StreamCreateFile(FALSE, filename.c_str(), 0, 0, BASS_STREAM_DECODE);
+            if (!astream) astream = BASS_MusicLoad(FALSE, filename.c_str(), 0, 0, BASS_MUSIC_DECODE, 1);
 
             basserror("decoder");
 
