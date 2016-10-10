@@ -5,7 +5,7 @@
 #ifndef INC_0XNATIVE_UTIL_H
 #define INC_0XNATIVE_UTIL_H
 
-#include <bass.h>
+#include "bass.h"
 #include <iostream>
 #include <string>
 #include <stdlib.h>

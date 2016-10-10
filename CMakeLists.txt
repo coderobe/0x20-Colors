@@ -22,8 +22,10 @@ set(SOURCE_FILES
     nuklear.h
     nuklear_glfw_gl2.h
     stb_image.h
+    bass.h
     util.h
     effect_manager.h
+
 
     "${CMAKE_CURRENT_BINARY_DIR}/launch.sh"
     "${CMAKE_CURRENT_BINARY_DIR}/libbass.so"
