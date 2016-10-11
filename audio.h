@@ -14,9 +14,17 @@ class Audio{
     public:
         Audio(GlobalState *state);
         ~Audio();
+        int init();
+        bool play_song(int song_id);
+        static int stream_callback(const void *input,
+                                   void *output,
+                                   unsigned long frameCount,
+                                   const PaStreamCallbackTimeInfo* timeInfo,
+                                   PaStreamCallbackFlags statusFlags,
+                                   void *userData);
     private:
         GlobalState* state;
-        bool read_file(string filename);
+        int read_file(string filename);
 };
 
 #endif //INC_0X20_COLORS_AUDIO_H

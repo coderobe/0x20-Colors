@@ -11,6 +11,7 @@
 #include <string>
 #include <stdlib.h>
 #include <string.h>
+#include <portaudio.h>
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -30,7 +31,7 @@ using namespace std;
 struct SongBuffer {
     string title;
     string filename;
-    void* buffer;
+    vector<long> buffer;
 };
 
 struct GlobalState {
@@ -39,7 +40,10 @@ struct GlobalState {
     int height = 0;
     struct nk_context *nuklear_context = NULL;
     struct nk_color background_color;
-    vector<SongBuffer> songs;
+    vector<SongBuffer*> songs;
+    SongBuffer* current_song;
+    int current_song_id;
+    PaStream* audio_stream;
 };
 
 #endif //INC_0X20_COLORS_STATE_H

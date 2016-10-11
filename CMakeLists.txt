@@ -9,7 +9,7 @@ find_package(GLFW REQUIRED)
 
 if (NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     # list of files for which we add a copy rule
-    set(data_SHADOW launch.sh)
+    set(data_SHADOW launch.sh loop_TheClockmaker.ogg)
 
     foreach(item IN LISTS data_SHADOW)
         message(STATUS ${item})
@@ -29,8 +29,18 @@ if(CMAKE_COMPILER_IS_GNUXX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Og")
 endif()
 
-set(SOURCE_FILES main.cpp state.cpp nuklear.h nuklear_glfw_gl2.h state.h audio.cpp audio.h "${CMAKE_CURRENT_BINARY_DIR}/launch.sh")
+set(SOURCE_FILES
+        main.cpp
+        nuklear.h
+        nuklear_glfw_gl2.h
+        state.cpp
+        state.h
+        audio.cpp
+        audio.h
+        "${CMAKE_CURRENT_BINARY_DIR}/launch.sh"
+        "${CMAKE_CURRENT_BINARY_DIR}/loop_TheClockmaker.ogg"
+        )
 
 add_executable(0x20_Colors ${SOURCE_FILES})
 
-TARGET_LINK_LIBRARIES(0x20_Colors ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARIES} ${GLFW_LIBRARIES} m ${CMAKE_CURRENT_BINARY_DIR}/${BASS_LIBRARY} vorbisfile)
+TARGET_LINK_LIBRARIES(0x20_Colors ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARIES} ${GLFW_LIBRARIES} m ${CMAKE_CURRENT_BINARY_DIR}/${BASS_LIBRARY} vorbisfile portaudio)

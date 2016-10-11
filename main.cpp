@@ -37,6 +37,10 @@ int main() {
     glfwMakeContextCurrent(state->window);
     glfwGetWindowSize(state->window, &state->width, &state->height);
 
+    Audio* audio_engine = new Audio(state);
+    audio_engine->init();
+    audio_engine->play_song(0);
+
     // Initialize Nuklear GUI
     state->nuklear_context = nk_glfw3_init(state->window, NK_GLFW3_INSTALL_CALLBACKS);
     {
