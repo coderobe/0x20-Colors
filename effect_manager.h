@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 #include "bass.h"
-#include <malloc.h>
 #include <stdlib.h>
 #include "util.h"
 #include <thread>
