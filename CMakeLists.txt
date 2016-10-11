@@ -1,42 +1,8 @@
 cmake_minimum_required(VERSION 3.6)
-project(0xNative)
+project(0x20_Colors)
 
-if (NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
-    # list of files for which we add a copy rule
-    set(data_SHADOW launch.sh libbass.so Megumi.png loop_Finale.mp3)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Og -g")
 
-    foreach(item IN LISTS data_SHADOW)
-        message(STATUS ${item})
-        add_custom_command(
-                OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${item}"
-                COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/${item}" "${CMAKE_CURRENT_BINARY_DIR}/${item}"
-                DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${item}"
-        )
-    endforeach()
-endif()
-
-set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} ./)
-include_directories(.)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++14 -Og -g")
-
-set(SOURCE_FILES
-    main.cpp
-    nuklear.h
-    nuklear_glfw_gl2.h
-    stb_image.h
-    bass.h
-    util.h
-    effect_manager.h
-
-
-    "${CMAKE_CURRENT_BINARY_DIR}/launch.sh"
-    "${CMAKE_CURRENT_BINARY_DIR}/libbass.so"
-    "${CMAKE_CURRENT_BINARY_DIR}/Megumi.png"
-    "${CMAKE_CURRENT_BINARY_DIR}/loop_Finale.mp3"
-)
-
-
-add_executable(0xNative ${SOURCE_FILES})
-
-TARGET_LINK_LIBRARIES(0xNative GLEW glfw GL m GLU ${CMAKE_CURRENT_BINARY_DIR}/libbass.so)
+set(SOURCE_FILES main.cpp state.cpp nuklear.h nuklear_glfw_gl2.h state.h audio.cpp audio.h)
+add_executable(0x20_Colors ${SOURCE_FILES})
+TARGET_LINK_LIBRARIES(0x20_Colors GLEW glfw GL m GLU vorbisfile)
