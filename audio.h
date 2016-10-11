@@ -16,6 +16,10 @@ class Audio{
         ~Audio();
         int init();
         bool play_song(int song_id);
+        int stream(const void* inputBuffer, void* outputBuffer,
+                   unsigned long framesPerBuffer,
+                   const PaStreamCallbackTimeInfo* timeInfo,
+                   PaStreamCallbackFlags statusFlags);
         static int stream_callback(const void *input,
                                    void *output,
                                    unsigned long frameCount,

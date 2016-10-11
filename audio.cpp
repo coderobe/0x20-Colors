@@ -22,8 +22,6 @@ Audio::~Audio(){
     delete this->state;
 }
 
-// Private functions
-
 bool Audio::play_song(int song_id) {
     //this->state->current_song_id = song_id;
     //this->state->current_song = this->state->songs[song_id];
@@ -38,11 +36,26 @@ bool Audio::play_song(int song_id) {
 int Audio::init(){
     // Initialize PortAudio
     int err = Pa_Initialize();
+
     PaStream* stream = this->state->audio_stream;
+    PaDeviceIndex device = Pa_GetDefaultOutputDevice();
+    PaStreamParameters parameters;
+    parameters.device = device;
+    if(parameters.device == paNoDevice){
+        return -1;
+    }
+    const PaDeviceInfo* device_info = Pa_GetDeviceInfo(device);
+    if(device_info != 0)
+        printf("Output device: %s\n", device_info->name);
+    parameters.channelCount = 2; // Stereo output
+    parameters.sampleFormat = paFloat32; // 32bit floating point output
+    parameters.suggestedLatency = device_info->defaultLowOutputLatency;
+    parameters.hostApiSpecificStreamInfo = NULL;
+
     // Open default output device as stereo stream
-    err = Pa_OpenDefaultStream(&stream, 0, 2, paFloat32, 44100,
-                              paFramesPerBufferUnspecified,
-                              &Audio::stream_callback, &this->state
+    err = Pa_OpenStream(&stream, NULL, &parameters, 44100,
+                              paFramesPerBufferUnspecified, paClipOff,
+                              &Audio::stream_callback, this
     );
     return err;
 }
@@ -53,15 +66,26 @@ int Audio::stream_callback(const void* input, void* output,
                            PaStreamCallbackFlags statusFlags,
                            void* userData
 ){
-    float* out = (float*)output;
+    return ((Audio*)userData)->stream(input, output, frameCount, timeInfo, statusFlags);
+}
+
+int Audio::stream(const void* inputBuffer, void* outputBuffer,
+                  unsigned long framesPerBuffer,
+                  const PaStreamCallbackTimeInfo* timeInfo,
+                  PaStreamCallbackFlags statusFlags
+){
+    fprintf(stderr, "blah\n");
+
+    float* out = (float*)outputBuffer;
     unsigned int i;
-    for(i = 0; i < frameCount; i++){
-        *out++ = 0.05f;
-        *out++ = 1.0f;
+    for(i = 0; i < framesPerBuffer; i++){
+        *out++ = 1;
+        *out++ = 2;
     }
-    fprintf(stderr, "blah %i\n", i);
     return paContinue;
 }
+
+// Private functions
 
 int Audio::read_file(string filename){
     OggVorbis_File vf;
