@@ -6,7 +6,6 @@
 #define INC_0X20_COLORS_STATE_H
 
 #include <GLFW/glfw3.h>
-#include <malloc.h>
 #include <vector>
 #include <string>
 #include <stdlib.h>
