@@ -10,12 +10,14 @@
 #include <math.h>
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
+#include <zconf.h>
+#include <fcntl.h>
 #include "audio.h"
 #include "state.h"
 
 Audio::Audio(GlobalState* state){
     this->state = state;
-    //this->read_file("loop_TheClockmaker.ogg");
+    this->read_file("loop_TheClockmaker.ogg");
 }
 
 Audio::~Audio(){
@@ -28,8 +30,11 @@ Audio::~Audio(){
 //! \return true if the audio stream was successfully started
 //!
 bool Audio::play_song(int song_id) {
-    //this->state->current_song_id = song_id;
-    //this->state->current_song = this->state->songs[song_id];
+    this->state->current_song_id = song_id;
+    this->state->current_song = new SongBuffer();
+    this->state->current_song->buffer = vector<long>(this->state->songs[song_id]->buffer);
+    this->state->current_song->filename = this->state->songs[song_id]->filename;
+    this->state->current_song->title = this->state->songs[song_id]->filename;
 
     auto err = Pa_StartStream(this->state->audio_stream);
     //Pa_Sleep(1000*1000);
@@ -40,7 +45,16 @@ bool Audio::play_song(int song_id) {
 
 int Audio::init(){
     // Initialize PortAudio
+    // Hack to disable annoying Portaudio logging when initializing
+    fflush(stderr);
+    int bak = dup(2);
+    int tmp = open("/dev/null", O_WRONLY);
+    dup2(tmp, 2);
+    close(tmp);
     int err = Pa_Initialize();
+    fflush(stderr);
+    dup2(bak, 2);
+    close(bak);
 
     PaDeviceIndex device = Pa_GetDefaultOutputDevice();
     PaStreamParameters parameters;
@@ -78,13 +92,15 @@ int Audio::stream(const void* inputBuffer, void* outputBuffer,
                   const PaStreamCallbackTimeInfo* timeInfo,
                   PaStreamCallbackFlags statusFlags
 ){
-    fprintf(stderr, "blah\n");
+    //fprintf(stderr, "blah\n");
 
     float* out = (float*)outputBuffer;
     unsigned int i;
+    SongBuffer* sb = this->state->current_song;
     for(i = 0; i < framesPerBuffer; i++){
-        *out++ = 1;
-        *out++ = 2;
+        *out++ = sb->buffer[0];
+        *out++ = sb->buffer[1];
+        sb->buffer.erase(sb->buffer.begin(), sb->buffer.begin()+2);
     }
     return paContinue;
 }
@@ -102,12 +118,8 @@ int Audio::read_file(string filename){
         fprintf(stderr, "File is not a valid OGG bitstream");
         return -1;
     }
-    char** ptr = ov_comment(&vf, -1)->user_comments;
     vorbis_info* vi = ov_info(&vf, -1);
-    while(*ptr){
-        fprintf(stderr, "%s\n", *ptr);
-        ++ptr;
-    }
+
     fprintf(stdout, "Bitstream is %d channel, %ldHz\n", vi->channels, vi->rate);
     fprintf(stdout, "Decoded length: %ld samples\n", (long)ov_pcm_total(&vf, -1));
     fprintf(stdout, "Encoded by %s\n", ov_comment(&vf, -1)->vendor);
