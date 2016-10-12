@@ -53,7 +53,7 @@ int Audio::init(){
         printf("Output device: %s\n", device_info->name);
     parameters.channelCount = 2; // Stereo output
     parameters.sampleFormat = paFloat32; // 32bit floating point output
-    parameters.suggestedLatency = device_info->defaultLowOutputLatency;
+    parameters.suggestedLatency = Pa_GetDeviceInfo(device)->defaultLowOutputLatency;
     parameters.hostApiSpecificStreamInfo = NULL;
 
     // Open default output device as stereo stream
