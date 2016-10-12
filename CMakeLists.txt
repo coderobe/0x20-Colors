@@ -6,6 +6,8 @@ find_package(GLEW REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLFW REQUIRED)
+find_package(PortAudio REQUIRED)
+find_package(Vorbis REQUIRED)
 
 if (NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     # list of files for which we add a copy rule
@@ -43,4 +45,12 @@ set(SOURCE_FILES
 
 add_executable(0x20_Colors ${SOURCE_FILES})
 
-TARGET_LINK_LIBRARIES(0x20_Colors ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${GLUT_LIBRARIES} ${GLFW_LIBRARIES} m ${CMAKE_CURRENT_BINARY_DIR}/${BASS_LIBRARY} vorbisfile portaudio)
+TARGET_LINK_LIBRARIES(0x20_Colors
+  m
+  ${OPENGL_LIBRARIES}
+  ${GLEW_LIBRARIES}
+  ${GLUT_LIBRARIES}
+  ${GLFW_LIBRARIES}
+  ${PORTAUDIO_LIBRARIES}
+  ${VORBIS_LIBRARIES}
+)
