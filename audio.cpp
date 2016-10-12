@@ -22,22 +22,26 @@ Audio::~Audio(){
     delete this->state;
 }
 
+//!
+//! \brief Audio::play_song starts the audio stream
+//! \param song_id Song ID
+//! \return true if the audio stream was successfully started
+//!
 bool Audio::play_song(int song_id) {
     //this->state->current_song_id = song_id;
     //this->state->current_song = this->state->songs[song_id];
 
-    Pa_StartStream(this->state->audio_stream);
+    auto err = Pa_StartStream(this->state->audio_stream);
     //Pa_Sleep(1000*1000);
     //Pa_StopStream(this->state->audio_stream);
 
-    return true;
+    return err == paNoError;
 }
 
 int Audio::init(){
     // Initialize PortAudio
     int err = Pa_Initialize();
 
-    PaStream* stream = this->state->audio_stream;
     PaDeviceIndex device = Pa_GetDefaultOutputDevice();
     PaStreamParameters parameters;
     parameters.device = device;
@@ -53,7 +57,7 @@ int Audio::init(){
     parameters.hostApiSpecificStreamInfo = NULL;
 
     // Open default output device as stereo stream
-    err = Pa_OpenStream(&stream, NULL, &parameters, 44100,
+    err = Pa_OpenStream(&this->state->audio_stream, NULL, &parameters, 44100,
                               paFramesPerBufferUnspecified, paClipOff,
                               &Audio::stream_callback, this
     );
