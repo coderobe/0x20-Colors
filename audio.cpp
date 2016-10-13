@@ -135,7 +135,6 @@ int Audio::read_file(string filename){
         fprintf(stderr, "File is not a valid OGG bitstream\n");
         return -1;
     }
-    fclose(file);
 
     while (true) {
         len = ov_read_float(&vf, &buffer, 1024, &bitstream);
@@ -175,5 +174,6 @@ int Audio::read_file(string filename){
     sb->filename = filename;
     this->state->songs.push_back(sb);
 
+    fclose(file);
     return 0;
 }
