@@ -103,15 +103,12 @@ int Audio::stream(const void* inputBuffer, void* outputBuffer,
     SongBuffer* sb = this->state->current_song;
 
     if (sb->size - sb->currentPosition < 2 ) {
-        for (i = 0; i < framesPerBuffer; i++) {
-            *out++ = 0;
-            *out++ = 0;
-        }
-    } else {
-        for (i = 0; i < framesPerBuffer; i++) {
-            *out++ = sb->buffer[sb->currentPosition++];
-            *out++ = sb->buffer[sb->currentPosition++];
-        }
+        sb->currentPosition = 0;
+    }
+
+    for (i = 0; i < framesPerBuffer; i++) {
+        *out++ = sb->buffer[sb->currentPosition++];
+        *out++ = sb->buffer[sb->currentPosition++];
     }
 
     return paContinue;
@@ -120,12 +117,12 @@ int Audio::stream(const void* inputBuffer, void* outputBuffer,
 // Private functions
 
 int Audio::read_file(string filename){
-    float **buffer;
+    float** buffer;
     long len = 0;
     long frate = 0;
     unsigned int channels = 0;
     vector<float> tmpbuf;
-    float *outbuf;
+    float* outbuf;
     int bitstream;
     OggVorbis_File vf;
     vorbis_info *info;
@@ -161,7 +158,7 @@ int Audio::read_file(string filename){
     fprintf(stdout, "Decoded %s\n", filename.c_str());
     fprintf(stdout, "Rate: %ld -- Channels: %u\n", frate, channels);
 
-    outbuf = (float *) malloc(tmpbuf.size() * sizeof(float));
+    outbuf = (float*)malloc(tmpbuf.size() * sizeof(float));
     for (int i = 0; i < tmpbuf.size(); i++) {
         outbuf[i] = tmpbuf.at(i);
     }
