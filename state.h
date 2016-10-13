@@ -30,7 +30,9 @@ using namespace std;
 struct SongBuffer {
     string title;
     string filename;
-    vector<long> buffer;
+    float *buffer;
+    unsigned long size;
+    unsigned long currentPosition;
 };
 
 struct GlobalState {
