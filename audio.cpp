@@ -32,7 +32,9 @@ Audio::~Audio(){
 bool Audio::play_song(int song_id) {
     this->state->current_song_id = song_id;
     this->state->current_song = new SongBuffer();
-    this->state->current_song->buffer = vector<long>(this->state->songs[song_id]->buffer);
+    this->state->current_song->buffer = this->state->songs[song_id]->buffer;
+    this->state->current_song->currentPosition = 0;
+    this->state->current_song->size = this->state->songs[song_id]->size;
     this->state->current_song->filename = this->state->songs[song_id]->filename;
     this->state->current_song->title = this->state->songs[song_id]->filename;
 
@@ -92,59 +94,84 @@ int Audio::stream(const void* inputBuffer, void* outputBuffer,
                   const PaStreamCallbackTimeInfo* timeInfo,
                   PaStreamCallbackFlags statusFlags
 ){
-    //fprintf(stderr, "blah\n");
+    (void) inputBuffer;
+    (void) timeInfo;
+    (void) statusFlags;
 
     float* out = (float*)outputBuffer;
     unsigned int i;
     SongBuffer* sb = this->state->current_song;
-    for(i = 0; i < framesPerBuffer; i++){
-        *out++ = sb->buffer[0];
-        *out++ = sb->buffer[1];
-        sb->buffer.erase(sb->buffer.begin(), sb->buffer.begin()+2);
+
+    if (sb->size - sb->currentPosition < 2 ) {
+        for (i = 0; i < framesPerBuffer; i++) {
+            *out++ = 0;
+            *out++ = 0;
+        }
+    } else {
+        for (i = 0; i < framesPerBuffer; i++) {
+            *out++ = sb->buffer[sb->currentPosition++];
+            *out++ = sb->buffer[sb->currentPosition++];
+        }
     }
+
     return paContinue;
 }
 
 // Private functions
 
 int Audio::read_file(string filename){
+    float **buffer;
+    long len = 0;
+    long frate = 0;
+    unsigned int channels = 0;
+    vector<float> tmpbuf;
+    float *outbuf;
+    int bitstream;
     OggVorbis_File vf;
-    int eof = 0;
-    int current_section;
-    char pcmout[4096];
-    vector<long> buffer;
+    vorbis_info *info;
+
     FILE* file = fopen(filename.c_str(), "r");
     if(ov_open(file, &vf, NULL, 0) < 0){
-        fprintf(stderr, "File is not a valid OGG bitstream");
+        fprintf(stderr, "File is not a valid OGG bitstream\n");
         return -1;
     }
-    vorbis_info* vi = ov_info(&vf, -1);
+    fclose(file);
 
-    fprintf(stdout, "Bitstream is %d channel, %ldHz\n", vi->channels, vi->rate);
-    fprintf(stdout, "Decoded length: %ld samples\n", (long)ov_pcm_total(&vf, -1));
-    fprintf(stdout, "Encoded by %s\n", ov_comment(&vf, -1)->vendor);
+    while (true) {
+        len = ov_read_float(&vf, &buffer, 1024, &bitstream);
+        if (len == 0) {
+            break;
+        }
+        if (len < 0) {
+            fprintf(stderr, "Read-error in the OGG bitstream, ignoring\n");
+            continue;
+        }
 
-    while(!eof){
-        long ret = ov_read(&vf, pcmout, sizeof(pcmout), 0, 2, 1, &current_section);
-        if(ret == 0){
-            eof = 1;
-        }else if(ret < 0){
-            fprintf(stderr, "Read-error in the OGG bitstream");
-        }else{
-            ret = ret+1;
-            for(long i = ret; i > 0; i--){
-                long x = ret - i;
-                buffer.push_back(pcmout[x]);
+        info = ov_info(&vf, bitstream);
+        frate = info->rate;
+        channels = info->channels;
+
+        for (int j = 0; j < channels; j++) {
+            for (int i = 0; i < len; i++) {
+                tmpbuf.push_back(buffer[j][i]);
             }
-            //fwrite(pcmout, 1, ret, stdout);
         }
     }
 
     ov_clear(&vf);
     fprintf(stdout, "Decoded %s\n", filename.c_str());
+    fprintf(stdout, "Rate: %ld -- Channels: %u\n", frate, channels);
+
+    outbuf = (float *) malloc(tmpbuf.size() * sizeof(float));
+    for (int i = 0; i < tmpbuf.size(); i++) {
+        outbuf[i] = tmpbuf.at(i);
+    }
+    // TODO: free(outbuf) when done with playing
 
     SongBuffer* sb = new SongBuffer();
-    sb->buffer = buffer;
+    sb->buffer = outbuf;
+    sb->currentPosition = 0;
+    sb->size = tmpbuf.size();
     sb->filename = filename;
     this->state->songs.push_back(sb);
 
